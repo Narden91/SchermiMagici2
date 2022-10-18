@@ -30,8 +30,9 @@ namespace WpfApp1
         private string _pathCurrentTask;
 		private string _instructionBoxText;
 		private string _pathTextCurrentTask;
-		private string _imageSavingFolderPath;
-
+		private string _imagePathFolder;
+		private string _imageWithBackgroundSavingFolderPath;
+        private string _imageWithoutBackgroundSavingFolderPath;
 
 
         private bool _isInstructionFolderEmpty = true;
@@ -160,11 +161,22 @@ namespace WpfApp1
 			else
 				InstructionBoxText = "Nessun file di Istruzioni trovato.";
 
-            _imageSavingFolderPath = Path.Combine(DataPath, "Images");
+			// Creo il path e la cartella Images
+            _imagePathFolder = Path.Combine(DataPath, "Images");
 
-            // Crea la Cartella in Documenti/Application_saving_folder/..
-            Directory.CreateDirectory(_imageSavingFolderPath);
+            Directory.CreateDirectory(_imagePathFolder);
 
+			_imageWithBackgroundSavingFolderPath = _imagePathFolder;
+
+            // Creo Path e cartella per le immagini con Background
+            //_imageWithBackgroundSavingFolderPath = Path.Combine(_imagePathFolder, "With_Background");
+
+            //Directory.CreateDirectory(_imageWithBackgroundSavingFolderPath);
+
+            // Creo Path e cartella per le immagini senza Background
+            //_imageWithoutBackgroundSavingFolderPath = Path.Combine(_imagePathFolder, "No_Background");
+
+            //Directory.CreateDirectory(_imageWithoutBackgroundSavingFolderPath);
 
             // Salvataggio anagrafica paziente
             SavePatientInformation();
@@ -196,14 +208,22 @@ namespace WpfApp1
             MoveTaskButtonEnabled = true;
             NewTaskStartButtonEnabled = false;
 
-			// Path e nome dell'immagine da salvare per il Task-i
-            string imageTaskPath = Path.Combine(_imageSavingFolderPath, TaskNameToShowToUI + ".png");
+			string imageFilenamePNG = TaskNameToShowToUI + ".png";
 
-			// Crea nuova finestra InkCanvas in un nuovo Thread
+            //string imageFilenameBMP = TaskNameToShowToUI + ".bmp";
+
+            // Path e nome dell'immagine con sfondo da salvare per il Task-i
+            string imageWithBackgroundPath = Path.Combine(_imageWithBackgroundSavingFolderPath, imageFilenamePNG);
+
+            // Path e nome dell'immagine senza sfondo da salvare per il Task-i
+            //string imageWithoutBackgroundPath = Path.Combine(_imageWithoutBackgroundSavingFolderPath, imageFilenameBMP);
+
+            // Crea nuova finestra InkCanvas in un nuovo Thread
             Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
 			{
-				_taskCanvasWindow = new TaskCanvas(PathCurrentTask, imageTaskPath);
-				_taskCanvasWindow.Show();
+                //_taskCanvasWindow = new TaskCanvas(PathCurrentTask, imageWithBackgroundPath, imageWithoutBackgroundPath);
+                _taskCanvasWindow = new TaskCanvas(PathCurrentTask, imageWithBackgroundPath);
+                _taskCanvasWindow.Show();
 			}));
 
 		}
