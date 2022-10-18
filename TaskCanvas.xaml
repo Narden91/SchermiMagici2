@@ -9,9 +9,14 @@
         Height="480"
         Width="800"
         mc:Ignorable="d"
-        Title="Task" >
+        Title="Task" 
+        WindowStyle="None">
     <Grid>
-        <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="29*"/>
+            <ColumnDefinition Width="131*"/>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.ColumnSpan="2">
             <Grid.RowDefinitions>
                 <RowDefinition/>
             </Grid.RowDefinitions>
