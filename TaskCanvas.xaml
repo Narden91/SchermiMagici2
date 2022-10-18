@@ -1,0 +1,23 @@
+﻿<Window x:Class="WpfApp1.TaskCanvas"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfApp1"
+        Icon="pack://application:,,,/Resources/logoCassino.ico"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        Height="480"
+        Width="800"
+        mc:Ignorable="d"
+        Title="Task" >
+    <Grid>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <InkCanvas Name="inkCanvasTask" Grid.Row="1">
+            </InkCanvas>
+        </Grid>
+    </Grid>
+</Window>
