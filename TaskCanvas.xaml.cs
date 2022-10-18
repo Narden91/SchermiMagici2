@@ -83,8 +83,6 @@ namespace WpfApp1
 
         private void SaveImage()
         {
-            
-
             RenderTargetBitmap rtb = new RenderTargetBitmap(_widthCanvas, _heightCanvas, 96d, 96d, PixelFormats.Default);
             rtb.Render(inkCanvasTask);
             DrawingVisual dvInk = new DrawingVisual();
