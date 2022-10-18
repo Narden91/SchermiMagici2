@@ -62,6 +62,11 @@ namespace WpfApp1
             }
         }
 
+        /// <summary>
+        /// Routine attivata al momento dell'apertura della finestra
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             MaximizeToSecondaryMonitor();
