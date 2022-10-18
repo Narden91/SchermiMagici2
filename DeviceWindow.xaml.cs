@@ -586,44 +586,6 @@ namespace WpfApp1
 			OnPenDataPropertyChanged();
 		}
 
-
-		///// <summary>
-		///// Funzione responsabile della formattazione del salvataggio dei dati acquisiti
-		///// </summary>
-		///// <param name="fileName"></param>
-		//private async Task RealTimeInk_SavePenData(string fileName)
-		//{
-		//	try
-		//	{
-		//		using var stream = File.CreateText(fileName);
-		//		stream.WriteLine("Timestamp,PointX,PointY,Phase,Pressure,PointDisplayX,PointDisplayY,PointRawX,PointRawY,PressureRaw,TimestampRaw,Sequence,Rotation,Azimuth,Altitude,TiltX,TiltY,PenId");
-
-		//		StringBuilder sb = new StringBuilder();
-		//		foreach (var item in _realTimeInk_PenData)
-		//		{
-		//			sb.Append($"{item.Timestamp.ToString("O")},{item.Point.X,6},{item.Point.Y,6},{item.Phase.ToString(),-11}");
-		//			sb.Append(item.Pressure.HasValue ? $",{item.Pressure.Value,9}" : ",");
-		//			sb.Append(item.PointDisplay.HasValue ? $",{item.PointDisplay.Value.X,6},{item.PointDisplay.Value.Y,6}" : ",,");
-		//			sb.Append(item.PointRaw.HasValue ? $",{item.PointRaw.Value.X,6},{item.PointRaw.Value.Y,6}" : ",,");
-		//			sb.Append(item.PressureRaw.HasValue ? $",{item.PressureRaw.Value,6}" : ",");
-		//			sb.Append(item.TimestampRaw.HasValue ? $",{item.TimestampRaw.Value,8}" : ",");
-		//			sb.Append(item.Sequence.HasValue ? $",{item.Sequence.Value,8}" : ",");
-		//			sb.Append(item.Rotation.HasValue ? $",{item.Rotation.Value,9}" : ",");
-		//			sb.Append(item.Azimuth.HasValue ? $",{item.Azimuth.Value,9}" : ",");
-		//			sb.Append(item.Altitude.HasValue ? $",{item.Altitude.Value,9}" : ",");
-		//			sb.Append(item.Tilt.HasValue ? $",{item.Tilt.Value.X,9},{item.Tilt.Value.Y,9}" : ",,");
-		//			sb.Append(item.PenId.HasValue ? $",0x{item.PenId.Value:x8}" : ",");
-		//			stream.WriteLine(sb.ToString());
-		//			sb.Clear();
-		//		}
-		//		stream.Close();
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		_synchronizationContext.Post(o => MessageBox.Show($"Unable to load image: {ex.Message}"), null);
-		//	}
-		//}
-
 		/// <summary>
 		/// Esegue il salvataggio dei dati rilevati dalla penna del device utilizzato
 		/// </summary>
@@ -694,6 +656,7 @@ namespace WpfApp1
 
 					_taskCanvasWindow.Close();
 
+					// Elimina memoria inutilizzata
                     GC.Collect();
 
                     if (!SavePenData(taskFilePath))

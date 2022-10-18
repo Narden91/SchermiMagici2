@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Windows;
 using WpfApp1.Models;
@@ -54,13 +55,10 @@ namespace WpfApp1.Commands
         /// <param name="parameter"></param>
         public override void Execute(object parameter)
         {
-            // TODO: 
-            // - Fare un check sulla _inkDeviceWatchers, se vuota -> MessageBox altrimenti seleziona il device 0 (primo della lista)
-
-
+            
             if (_devicePageViewModel.SelectedDevice == null)
             {
-                MessageBox.Show("No device selected");
+                MessageBox.Show("Nessun Dispositivo Selezionato!");
 
                 #region Debug 1
                 //string savingFolder = App.GetAppFolder();
@@ -157,6 +155,9 @@ namespace WpfApp1.Commands
 
                 // Apre la finestra nella quale verranno gestiti i Task
                 _deviceWindow = new DeviceWindow(_deviceConnectionStore.Connection.InkDeviceInfo, _experimentStore);
+
+                // Elimina memoria inutilizzata
+                GC.Collect();
 
                 // Apre la Finestra dei Task
                 _deviceWindow.Show();

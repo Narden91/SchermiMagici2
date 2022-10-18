@@ -58,8 +58,6 @@ namespace WpfApp1.ViewModels
 
             InitializeInkWatchers();
 
-            // Dopo questo punto ho la lista dei dispositivi collegati al PC (_inkDeviceWatchers)
-
             StartTrialCommand = new StartTrialCommand(this, experimentStore, deviceConnectionStore);
             BackToPatientInfoCommand = new BackToPatientInfoCommand(this, patientInfoPageNavigationService);
         }

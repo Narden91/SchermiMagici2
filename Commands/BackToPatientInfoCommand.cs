@@ -1,4 +1,5 @@
-﻿using WpfApp1.Services;
+﻿using System;
+using WpfApp1.Services;
 using WpfApp1.ViewModels;
 
 namespace WpfApp1.Commands
@@ -17,6 +18,10 @@ namespace WpfApp1.Commands
         public override void Execute(object parameter)
         {
             // Torno alla schermata di inserimento di informazioni del nuovo paziente
+
+            // Elimina memoria inutilizzata
+            GC.Collect();
+
             _navigationService.Navigate();
         }
     }
