@@ -29,10 +29,11 @@ namespace WpfApp1
 		private string _pathCurrentTask;
 		private string _instructionBoxText;
 		private string _pathTextCurrentTask;
+		private string _imageSavingFolderPath;
 
 
 
-		private bool _isInstructionFolderEmpty = true;
+        private bool _isInstructionFolderEmpty = true;
 
 		/// <summary>
 		/// Path dell'immagine Task da somministrare
@@ -158,8 +159,14 @@ namespace WpfApp1
 			else
 				InstructionBoxText = "Nessun file di Istruzioni trovato.";
 
-			// Salvataggio anagrafica paziente
-			SavePatientInformation();
+            _imageSavingFolderPath = Path.Combine(DataPath, "Images");
+
+            // Crea la Cartella in Documenti/Application_saving_folder/..
+            Directory.CreateDirectory(_imageSavingFolderPath);
+
+
+            // Salvataggio anagrafica paziente
+            SavePatientInformation();
 
 			_synchronizationContext = SynchronizationContext.Current;
 
@@ -184,18 +191,22 @@ namespace WpfApp1
 		private void OpenTaskWindow(object sender, RoutedEventArgs e)
 		{
 
-			//if (TaskNameToShowToUI == "Task_6" || TaskNameToShowToUI == "Task_7" || TaskNameToShowToUI == "Task_7")
-			//	RealTimeInk_StartStop = false;
-			//else
-			//             RealTimeInk_StartStop = true;
+            //if (TaskNameToShowToUI == "Task_6" || TaskNameToShowToUI == "Task_7" || TaskNameToShowToUI == "Task_7")
+            //	RealTimeInk_StartStop = false;
+            //else
+            //             RealTimeInk_StartStop = true;
 
-			RealTimeInk_StartStop = true;
+            string imageTaskPath = Path.Combine(_imageSavingFolderPath, TaskNameToShowToUI + ".png");
+
+            RealTimeInk_StartStop = true;
             NewTaskStartButtonEnabled = false;
+
+            //MessageBox.Show(imageTaskPath, "Path Immagine Task ");
 
 
             Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
 			{
-				_taskCanvasWindow = new TaskCanvas(PathCurrentTask);
+				_taskCanvasWindow = new TaskCanvas(PathCurrentTask, imageTaskPath);
 				_taskCanvasWindow.Show();
 			}));
 
@@ -683,7 +694,9 @@ namespace WpfApp1
 
 					_taskCanvasWindow.Close();
 
-					if (!SavePenData(taskFilePath))
+                    GC.Collect();
+
+                    if (!SavePenData(taskFilePath))
 					{
 						MessageBox.Show("Errore durante il salvataggio");
 					}
