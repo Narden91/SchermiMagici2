@@ -24,9 +24,10 @@ namespace WpfApp1
 		private readonly CancellationTokenSource _cancellationToken = new CancellationTokenSource();
 		private readonly ExperimentStore _experimentStore;
 		private TaskCanvas _taskCanvasWindow;
+        private List<string> _taskToNotRecordList = new List<string> { "Task_2", "Task_3", "Task_6", "Task_26" };
 
-		#region Attributi
-		private string _pathCurrentTask;
+        #region Attributi
+        private string _pathCurrentTask;
 		private string _instructionBoxText;
 		private string _pathTextCurrentTask;
 		private string _imageSavingFolderPath;
@@ -190,33 +191,21 @@ namespace WpfApp1
 		/// <param name="e"></param>
 		private void OpenTaskWindow(object sender, RoutedEventArgs e)
 		{
-
-            //if (TaskNameToShowToUI == "Task_6" || TaskNameToShowToUI == "Task_7" || TaskNameToShowToUI == "Task_7")
-            //	RealTimeInk_StartStop = false;
-            //else
-            //             RealTimeInk_StartStop = true;
-
-            string imageTaskPath = Path.Combine(_imageSavingFolderPath, TaskNameToShowToUI + ".png");
-
+			// Gestione abilitazione Pulsanti alla somministrazione del Task-i
             RealTimeInk_StartStop = true;
+            MoveTaskButtonEnabled = true;
             NewTaskStartButtonEnabled = false;
 
-            //MessageBox.Show(imageTaskPath, "Path Immagine Task ");
+			// Path e nome dell'immagine da salvare per il Task-i
+            string imageTaskPath = Path.Combine(_imageSavingFolderPath, TaskNameToShowToUI + ".png");
 
-
+			// Crea nuova finestra InkCanvas in un nuovo Thread
             Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
 			{
 				_taskCanvasWindow = new TaskCanvas(PathCurrentTask, imageTaskPath);
 				_taskCanvasWindow.Show();
 			}));
 
-			#region Threading usando Task
-			//Task.Factory.StartNew(new Action(() =>
-			//{
-			//	_taskCanvasWindow = new TaskCanvas(_pathCurrentTask);
-			//	_taskCanvasWindow.Show();
-			//}), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.FromCurrentSynchronizationContext());
-			#endregion
 		}
 
 		/// <summary>
@@ -431,12 +420,46 @@ namespace WpfApp1
 			}
 		}
 
-		#endregion
+        #endregion
 
-		#region RealTimeInk 
+        #region Gestione Pulsanti e funzioni collegate ai Pulsanti 
 
-		#region Attributi privati gestione punti acquisiti
-		private List<Wacom.Devices.RealTimePointReceivedEventArgs> _realTimeInk_PenData = new List<Wacom.Devices.RealTimePointReceivedEventArgs>();
+        #region Pulsante Successivo 
+
+        private bool _moveTaskButtonEnabled = false;
+
+        /// <summary>
+        /// Funzione Per gestire l'abilitazione del pulsante Salva
+        /// </summary> 
+        public bool MoveTaskButtonEnabled
+        {
+            get => _moveTaskButtonEnabled;
+            set
+            {
+                _moveTaskButtonEnabled = value;
+            }
+        }
+        #endregion
+
+        #region Pulsante Somministra Task
+
+        private bool _newTaskStartButtonEnabled = true;
+
+        /// <summary>
+        /// Condizione abilitazione pulsante Verde di Somministrazione Task
+        /// </summary>
+        public bool NewTaskStartButtonEnabled
+        {
+            get => _newTaskStartButtonEnabled;
+            set
+            {
+                _newTaskStartButtonEnabled = value;
+            }
+        }
+        #endregion
+
+        #region Attributi privati gestione punti acquisiti
+        private List<Wacom.Devices.RealTimePointReceivedEventArgs> _realTimeInk_PenData = new List<Wacom.Devices.RealTimePointReceivedEventArgs>();
 		private Wacom.Devices.RealTimePointReceivedEventArgs _realTimeInk_PenData_Last;
 		#endregion
 
@@ -483,8 +506,6 @@ namespace WpfApp1
         /// valuta l'operando a destra e ne restituisce il risultato. L'operatore ?? non valuta l'operando di destra 
         /// se l'operando di sinistra restituisce un valore non Null.
         /// </summary>
-        //public string RealTimeInk_IsStarted => (_realTimeInkService?.IsStarted ?? false) ? "YES" : "NO";
-
         public string RealTimeInk_IsStarted => (_realTimeInkService?.IsStarted ?? false) ? "SI" : "NO";
 
 		// Funzione per effettuare il refresh della UI 
@@ -498,8 +519,8 @@ namespace WpfApp1
 
 				if (PropertyChanged != null)
 				{
-					PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(SaveTaskButtonEnabled)));
-					PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(SkipTaskButtonEnabled)));
+					PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(MoveTaskButtonEnabled)));
+					//PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(SkipTaskButtonEnabled)));
 					PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(RealTimeInk_Count_int)));
 					PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(NewTaskStartButtonEnabled)));
 					PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(PathCurrentTask)));
@@ -509,7 +530,11 @@ namespace WpfApp1
 			}
 		}
 
-
+		/// <summary>
+		/// Gestione punti ricevuti dal dispositivo in tempo reale
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void _realTimeInkService_PointReceived(object sender, Wacom.Devices.RealTimePointReceivedEventArgs e)
 		{
 			_realTimeInk_PenData_Last = e;
@@ -523,62 +548,10 @@ namespace WpfApp1
 		public int RealTimeInk_Count_int => _realTimeInk_PenData.Count;
 
 		/// <summary>
-		/// Funzione Per gestire l'abilitazione del pulsante di Salvataggio
+		/// Funzione per effettuare il clear del buffer di punti ricevuti dal dispositivo
 		/// </summary>
-		//public bool RealTimeInk_Count => ((_realTimeInk_PenData.Count > 0) && (TaskNameToShowToUI != "Task_7") && (TaskNameToShowToUI != "Task_6"));
-
-        #region Pulsante Salva Task
-
-        private bool _saveTaskButtonEnabled = true;
-
-        /// <summary>
-        /// Funzione Per gestire l'abilitazione del pulsante Salva
-        /// </summary> 
-        public bool SaveTaskButtonEnabled
-        {
-            get => _saveTaskButtonEnabled;
-            set
-            {
-                _saveTaskButtonEnabled = value;
-            }
-        }
-        #endregion
-
-
-        #region Pulsante Salta Task
-
-        private bool _skipTaskButtonEnabled = true;
-
-        /// <summary>
-        /// Funzione Per gestire l'abilitazione del pulsante Avanti
-        /// </summary> 
-        public bool SkipTaskButtonEnabled
-        {
-            get => _skipTaskButtonEnabled;
-            set
-            {
-                _skipTaskButtonEnabled = value;
-            }
-        }
-        #endregion
-
-        #region Pulsante Somministra Task
-
-        private bool _newTaskStartButtonEnabled = true;
-
-        /// <summary>
-        /// Condizione abilitazione pulsante Verde di Somministrazione Task
-        /// </summary>
-        public bool NewTaskStartButtonEnabled
-        {
-            get => _newTaskStartButtonEnabled;
-            set
-            {
-                _newTaskStartButtonEnabled = value;
-            }
-        }
-        #endregion
-
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
         private void RealTimeInk_PenData_Clear(object sender, RoutedEventArgs e)
 		{
 			_realTimeInk_PenData_Last = null;
@@ -627,211 +600,190 @@ namespace WpfApp1
 			return status;
 		}
 
-		/// <summary>
-		/// Funzione collegata al pulsante Save della View
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
-		private void RealTimeInk_PenData_Save(object sender, RoutedEventArgs e)
-		{
-			RealTimeInk_StartStop = false;
-            NewTaskStartButtonEnabled = true;
+       
+        /// <summary>
+        /// Funzione collegata al pulsante SUCCESSIVO della View
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void RealTimeInk_PenData_Save(object sender, RoutedEventArgs e)
+        {
 
-            if (_realTimeInk_PenData.Count > 0)
+			if (_taskToNotRecordList.Contains(TaskNameToShowToUI))
 			{
-				var result = CustomMessageBox.ShowOKCancel("Il Task è stato eseguito correttamente?",
-														   "Esecuzione Terminata",
-														   "Si, Salva Task",
-														   "No, Ripeti");
-				
-                if (result == MessageBoxResult.OK)
-				{
-
-					//string taskFilename = Path.GetFileNameWithoutExtension(PathCurrentTask) + "_" + PatientId + ".csv";
-
-					string taskFilename = "Task" + _trueTaskIndex.ToString() + "_" + PatientId + ".csv";
-
-					// Path completo del file csv dello specifico Task
-					string taskFilePath = Path.Combine(DataPath, taskFilename);
-
-					_taskCanvasWindow.Close();
-
-					// Elimina memoria inutilizzata
-                    GC.Collect();
-
-                    if (!SavePenData(taskFilePath))
-					{
-						MessageBox.Show("Errore durante il salvataggio");
-					}
-
-					//Task.Run(() => RealTimeInk_SavePenData(taskFilePath), _cancellationToken.Token);
-
-					// Effettua il salvataggio in modo asincrono
-					//Task.Run(async () => await RealTimeInk_SavePenData(taskFilePath), _cancellationToken.Token);
-
-					// Reinizializza il Counter dei punti in memoria
-					_realTimeInk_PenData_Last = null;
-					_realTimeInk_PenData.Clear();
-
-					// Aumenta contatore e passo al task successivo
-					_taskCounter += 1;
-
-					// Aumenta contatore e passo al task successivo
-					_trueTaskIndex += 1;
-
-					if (_taskCounter >= _totalNumberOfTask)
-					{
-						MessageBox.Show("Ultimo Task eseguito, Finestra in chiusura...");
-						this.Close();
-					}
-					else
-					{
-						PathCurrentTask = TaskImageList[_taskCounter];
-
-						if (!_isInstructionFolderEmpty)
-						{
-							PathTextCurrentTask = TaskTextList[_taskCounter];
-
-							//MessageBox.Show(File.ReadAllText(PathTextCurrentTask), "Testo txt ");
-
-							InstructionBoxText = "";
-							InstructionBoxText = File.ReadAllText(PathTextCurrentTask);
-						}
-
-						// Aggiornamento testo nella TextBox
-						//PathTextCurrentTask = TaskTextList[_taskCounter];
-
-						//InfoTextBox.Text = "";
-
-						//InfoTextBox.Text = File.ReadAllText(PathTextCurrentTask.FullName);
-
-						// Aggiorna la UI
-						OnPenDataPropertyChanged();
-					}
-				}
-				else
-				{
-					// Reinizializza il Counter dei punti in memoria
-					_realTimeInk_PenData_Last = null;
-					_realTimeInk_PenData.Clear();
-
-					// Aggiorna la UI
-					OnPenDataPropertyChanged();
-
-					// Chiudo la finestra del Task 
-					_taskCanvasWindow.Close();
-				}
-
-
-				//PathCurrentTask = TaskImageList[_taskCounter];
-
-				////MessageBox.Show(PathCurrentTask, "Path del Prossimo Task:");
-
-				//OnPenDataPropertyChanged();
-
-				#region routine per chiedere il salvataggio manuale
-				//SaveFileDialog saveFileDialog = new SaveFileDialog
-				//{
-				//	//DefaultFileName = myDataGridView.SelectedCells[2].Value.ToString(),
-				//	Title = "Save PenData",
-				//	AddExtension = true,
-				//	DefaultExt = "csv",
-				//	Filter = "CSV (*.csv)|*.csv",
-				//	OverwritePrompt = true
-				//};
-
-				//if (saveFileDialog.ShowDialog() == true)
-				//{
-				//	Task.Run(() => RealTimeInk_SavePenData(saveFileDialog.FileName), _cancellationToken.Token);
-				//}
-				#endregion
-			}
-		}
-
-		/// <summary>
-		/// Funzione per poter passare al Task successivo senza dover salvare 
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
-		private void SkipToNextTask(object sender, RoutedEventArgs e)
-		{
-
-            NewTaskStartButtonEnabled = true;
-
-            RealTimeInk_StartStop = false;
-
-            var result = CustomMessageBox.ShowOKCancel("Passare al Task Successivo?",
+                //Task da Saltare
+                var result = CustomMessageBox.ShowOKCancel("Passare al Task Successivo?",
                                                            "Esecuzione Terminata",
                                                            "Si",
                                                            "No");
-            
-			if (result == MessageBoxResult.OK)
+                if (result == MessageBoxResult.OK)
+                {
+
+                    // Reinizializza il Counter dei punti in memoria
+                    _realTimeInk_PenData_Last = null;
+                    _realTimeInk_PenData.Clear();
+
+                    // Aumenta contatore e passo al task successivo
+                    _taskCounter += 1;
+
+                    if (_taskCounter >= _totalNumberOfTask)
+                    {
+                        MessageBox.Show("Ultimo Task eseguito, Finestra in chiusura...");
+                        this.Close();
+                    }
+                    else
+                    {
+                        PathCurrentTask = TaskImageList[_taskCounter];
+
+                        if (!_isInstructionFolderEmpty)
+                        {
+                            PathTextCurrentTask = TaskTextList[_taskCounter];
+
+                            InstructionBoxText = "";
+                            InstructionBoxText = File.ReadAllText(PathTextCurrentTask);
+                        }
+                    }
+
+                    // Aggiorna la UI
+                    OnPenDataPropertyChanged();
+
+					// Gestione Abilitazione Pulsanti
+					MoveTaskButtonEnabled = false;
+                   
+                    RealTimeInk_StartStop = false;
+
+                    // Riabilito il pulsante di somministrazione Task
+                    NewTaskStartButtonEnabled = true;
+
+                    // Chiudo la finestra del Task 
+                    _taskCanvasWindow.Close();
+                }
+
+            }
+			else
 			{
-                
-                // Reinizializza il Counter dei punti in memoria
-                _realTimeInk_PenData_Last = null;
-				_realTimeInk_PenData.Clear();
+                if (_realTimeInk_PenData.Count > 0)
+                {
+                    var result = CustomMessageBox.ShowOKCancel("Il Task è stato eseguito correttamente?",
+                                                               "Esecuzione Terminata",
+                                                               "Si, Salva Task",
+                                                               "No, Ripeti");
 
-				// Aumenta contatore e passo al task successivo
-				_taskCounter += 1;
+                    if (result == MessageBoxResult.OK)
+                    {
+						// Filename per il .csv da generare
+                        string taskFilename = "Task" + _trueTaskIndex.ToString() + "_" + PatientId + ".csv";
 
-				if (_taskCounter >= _totalNumberOfTask)
-				{
-					MessageBox.Show("Ultimo Task eseguito, Finestra in chiusura...");
-					this.Close();
-				}
-				else
-				{
-					PathCurrentTask = TaskImageList[_taskCounter];
+                        // Path completo del file csv dello specifico Task
+                        string taskFilePath = Path.Combine(DataPath, taskFilename);
 
-					if (!_isInstructionFolderEmpty)
-					{
-						PathTextCurrentTask = TaskTextList[_taskCounter];
+						// Chiudo finestra InkCanvas
+                        _taskCanvasWindow.Close();
 
-						//MessageBox.Show(File.ReadAllText(PathTextCurrentTask), "Testo txt ");
+                        // Elimina memoria inutilizzata
+                        GC.Collect();
 
-						InstructionBoxText = "";
-						InstructionBoxText = File.ReadAllText(PathTextCurrentTask);
-					}
-				}
+                        if (!SavePenData(taskFilePath))
+                        {
+                            MessageBox.Show("Errore durante il salvataggio");
+                        }
 
-				// Aggiorna la UI
-				OnPenDataPropertyChanged();
+                        // Reinizializza il Counter dei punti in memoria
+                        _realTimeInk_PenData_Last = null;
+                        _realTimeInk_PenData.Clear();
 
-				// Chiudo la finestra del Task 
-				_taskCanvasWindow.Close();
-			}
-		}
+                        // Aumenta contatore e passo al task successivo
+                        _taskCounter += 1;
+
+                        // Aumenta contatore e passo al task successivo
+                        _trueTaskIndex += 1;
+
+                        if (_taskCounter >= _totalNumberOfTask)
+                        {
+                            MessageBox.Show("Ultimo Task eseguito, Finestra in chiusura...");
+                            this.Close();
+                        }
+                        else
+                        {
+                            PathCurrentTask = TaskImageList[_taskCounter];
+
+                            if (!_isInstructionFolderEmpty)
+                            {
+                                PathTextCurrentTask = TaskTextList[_taskCounter];
+
+                                InstructionBoxText = "";
+                                InstructionBoxText = File.ReadAllText(PathTextCurrentTask);
+                            }
+
+                            // Aggiorna la UI
+                            OnPenDataPropertyChanged();
+
+                            // Gestione Abilitazione Pulsanti
+                            MoveTaskButtonEnabled = false;
+
+                            RealTimeInk_StartStop = false;
+
+                            // Riabilito il pulsante di somministrazione Task
+                            NewTaskStartButtonEnabled = true;
+                        }
+                    }
+                    else
+                    {
+                        // Reinizializza il Counter dei punti in memoria
+                        _realTimeInk_PenData_Last = null;
+                        _realTimeInk_PenData.Clear();
+
+                        // Aggiorna la UI
+                        OnPenDataPropertyChanged();
+
+                        // Gestione Abilitazione Pulsanti
+                        MoveTaskButtonEnabled = false;
+
+                        RealTimeInk_StartStop = false;
+
+                        // Riabilito il pulsante di somministrazione Task
+                        NewTaskStartButtonEnabled = true;
+
+                        // Chiudo la finestra del Task 
+                        _taskCanvasWindow.Close();
+                    }
+
+                }
+            }
+
+        }
+
+        #endregion
 
 
-		private string ValueToString<T>(T? value) where T : struct
-		{
-			return value != null && value.HasValue ? value.ToString() : "";
-		}
+        #region Funzioni Accessorie Wacom
+        private string ValueToString<T>(T? value) where T : struct
+        {
+            return value != null && value.HasValue ? value.ToString() : "";
+        }
 
-		private string ValueToHexString(int? value)
-		{
-			return value != null && value.HasValue ? $"0x{value.Value:x8}" : "";
-		}
+        private string ValueToHexString(int? value)
+        {
+            return value != null && value.HasValue ? $"0x{value.Value:x8}" : "";
+        }
 
-		public string RealTimeInk_Timestamp => _realTimeInk_PenData_Last?.Timestamp.ToString("O");
-		public string RealTimeInk_Point => _realTimeInk_PenData_Last?.Point.ToString();
-		public string RealTimeInk_Phase => _realTimeInk_PenData_Last?.Phase.ToString();
-		public string RealTimeInk_Pressure => ValueToString(_realTimeInk_PenData_Last?.Pressure);
-		public string RealTimeInk_PointDisplay => ValueToString(_realTimeInk_PenData_Last?.PointDisplay);
-		public string RealTimeInk_PointRaw => ValueToString(_realTimeInk_PenData_Last?.PointRaw);
-		public string RealTimeInk_PressureRaw => ValueToString(_realTimeInk_PenData_Last?.PressureRaw);
-		public string RealTimeInk_TimestampRaw => ValueToString(_realTimeInk_PenData_Last?.TimestampRaw);
-		public string RealTimeInk_Sequence => ValueToString(_realTimeInk_PenData_Last?.Sequence);
-		public string RealTimeInk_Rotation => ValueToString(_realTimeInk_PenData_Last?.Rotation);
-		public string RealTimeInk_Azimuth => ValueToString(_realTimeInk_PenData_Last?.Azimuth);
-		public string RealTimeInk_Altitude => ValueToString(_realTimeInk_PenData_Last?.Altitude);
-		public string RealTimeInk_Tilt => ValueToString(_realTimeInk_PenData_Last?.Tilt);
-		public string RealTimeInk_PenId => ValueToHexString(_realTimeInk_PenData_Last?.PenId);
-		#endregion
+        public string RealTimeInk_Timestamp => _realTimeInk_PenData_Last?.Timestamp.ToString("O");
+        public string RealTimeInk_Point => _realTimeInk_PenData_Last?.Point.ToString();
+        public string RealTimeInk_Phase => _realTimeInk_PenData_Last?.Phase.ToString();
+        public string RealTimeInk_Pressure => ValueToString(_realTimeInk_PenData_Last?.Pressure);
+        public string RealTimeInk_PointDisplay => ValueToString(_realTimeInk_PenData_Last?.PointDisplay);
+        public string RealTimeInk_PointRaw => ValueToString(_realTimeInk_PenData_Last?.PointRaw);
+        public string RealTimeInk_PressureRaw => ValueToString(_realTimeInk_PenData_Last?.PressureRaw);
+        public string RealTimeInk_TimestampRaw => ValueToString(_realTimeInk_PenData_Last?.TimestampRaw);
+        public string RealTimeInk_Sequence => ValueToString(_realTimeInk_PenData_Last?.Sequence);
+        public string RealTimeInk_Rotation => ValueToString(_realTimeInk_PenData_Last?.Rotation);
+        public string RealTimeInk_Azimuth => ValueToString(_realTimeInk_PenData_Last?.Azimuth);
+        public string RealTimeInk_Altitude => ValueToString(_realTimeInk_PenData_Last?.Altitude);
+        public string RealTimeInk_Tilt => ValueToString(_realTimeInk_PenData_Last?.Tilt);
+        public string RealTimeInk_PenId => ValueToHexString(_realTimeInk_PenData_Last?.PenId);
+        #endregion
 
-
-		private void OnWindowclose(object sender, EventArgs e)
+        private void OnWindowclose(object sender, EventArgs e)
 		{
 			Environment.Exit(Environment.ExitCode); // Prevent memory leak
 			Application.Current.Shutdown();
