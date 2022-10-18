@@ -80,7 +80,9 @@ namespace WpfApp1
             //System.Windows.Application.Current.Shutdown();
         }
 
-
+        /// <summary>
+        /// Funzione che alla chiusura della finestra Task effettua il salvataggio dell'Immagine
+        /// </summary>
         private void SaveImage()
         {
             RenderTargetBitmap rtb = new RenderTargetBitmap(_widthCanvas, _heightCanvas, 96d, 96d, PixelFormats.Default);
