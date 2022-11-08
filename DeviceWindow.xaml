@@ -238,7 +238,7 @@
                 Name="InstructionBox"
                 FontSize="18"
                 Text="{Binding InstructionBoxText}"
-                Height="180"/>
+                Height="160"/>
             </StackPanel>
 
             <!--Pulsante Clear-->

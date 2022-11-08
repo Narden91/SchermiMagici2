@@ -22,6 +22,9 @@ namespace WpfApp1
         private int _heightCanvas;
         private double dpi = 96d;
 
+        private int _secondScreenWidthCanvas;
+        private int _secondScreenHeightCanvas;
+
         /// <summary>
         /// Costruttore della classe responsabile per la creazione 
         /// di una nuova finestra contenente l'immagine del Task attuale
@@ -64,6 +67,8 @@ namespace WpfApp1
                 this.Width = workingArea.Width;
                 this.Height = workingArea.Height;
 
+                _secondScreenWidthCanvas = workingArea.Width;
+                _secondScreenHeightCanvas= workingArea.Height;
             }
         }
 
@@ -96,12 +101,21 @@ namespace WpfApp1
         /// </summary>
         private void SaveImageWithBackground()
         {
-            RenderTargetBitmap rtb = new RenderTargetBitmap(_widthCanvas, _heightCanvas, dpi, dpi, PixelFormats.Default);
+            //RenderTargetBitmap rtb = new RenderTargetBitmap(_widthCanvas, _heightCanvas, dpi, dpi, PixelFormats.Default);
+
+            // Per secondo schermo
+            RenderTargetBitmap rtb = new RenderTargetBitmap(_secondScreenWidthCanvas, _secondScreenHeightCanvas, dpi, dpi, PixelFormats.Default);
+
             rtb.Render(inkCanvasTask);
             DrawingVisual dvInk = new DrawingVisual();
             DrawingContext dcInk = dvInk.RenderOpen();
             SolidColorBrush brs = new SolidColorBrush(Colors.Black);
-            dcInk.DrawRectangle(brs, null, new Rect(0d, 0d, _widthCanvas, _heightCanvas));
+            //dcInk.DrawRectangle(brs, null, new Rect(0d, 0d, _widthCanvas, _heightCanvas));
+
+            // Per secondo schermo
+            dcInk.DrawRectangle(brs, null, new Rect(0d, 0d, _secondScreenWidthCanvas, _secondScreenHeightCanvas));
+
+
             foreach (System.Windows.Ink.Stroke stroke in inkCanvasTask.Strokes)
             {
                 stroke.Draw(dcInk);

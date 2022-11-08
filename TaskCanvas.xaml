@@ -12,7 +12,7 @@
         Title="Task" 
         WindowStyle="None">
     <Grid>
-        <Grid.ColumnDefinitions>
+        <!--<Grid.ColumnDefinitions>
             <ColumnDefinition Width="29*"/>
             <ColumnDefinition Width="131*"/>
         </Grid.ColumnDefinitions>
@@ -23,6 +23,9 @@
 
             <InkCanvas Name="inkCanvasTask" Grid.Row="1">
             </InkCanvas>
-        </Grid>
+        </Grid>-->
+
+        <InkCanvas Name="inkCanvasTask">
+        </InkCanvas>
     </Grid>
 </Window>
