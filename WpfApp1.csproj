@@ -8,6 +8,12 @@
     <UseWindowsForms>True</UseWindowsForms>
     <Configurations>Debug;Release;Rilascio</Configurations>
     <Platforms>AnyCPU;x64</Platforms>
+    <Version>2.0.0</Version>
+    <Authors>Emanuele Nardone</Authors>
+    <Company>Unicas</Company>
+    <Product>Schermi Magici e segni preziosi</Product>
+    <Copyright>Unicas</Copyright>
+    <PackageIcon>logoCassino.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,7 +22,6 @@
     <None Remove="Resources\DiscreteDisplaySampleImage.png" />
     <None Remove="Resources\hid.png" />
     <None Remove="Resources\logoCassino.ico" />
-    <None Remove="Resources\logoCassino.png" />
     <None Remove="Resources\ser.png" />
     <None Remove="Resources\Task1.jpg" />
     <None Remove="Resources\usb.png" />
@@ -84,6 +89,13 @@
       <CopyToOutputDirectory></CopyToOutputDirectory>
     </Resource>
     <Resource Include="Views\crc.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Resources\logoCassino.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

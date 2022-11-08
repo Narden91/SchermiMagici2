@@ -5,7 +5,7 @@
   },
   "projects": {
     "C:\\Users\\Emanuele\\Desktop\\SchermiMagici2\\WpfApp1.csproj": {
-      "version": "1.0.0",
+      "version": "2.0.0",
       "restore": {
         "projectUniqueName": "C:\\Users\\Emanuele\\Desktop\\SchermiMagici2\\WpfApp1.csproj",
         "projectName": "WpfApp1",
@@ -72,7 +72,7 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.401\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.100\\RuntimeIdentifierGraph.json"
         }
       }
     }
