@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Windows;
 using WpfApp1.Models;
+using WpfApp1.Services;
 using WpfApp1.Stores;
 using WpfApp1.ViewModels;
 
@@ -10,7 +11,7 @@ namespace WpfApp1.Commands
 {
     public class StartTrialCommand : CommandBase
     {
-
+        private readonly NavigationService _navigationService;
         //private readonly NavigationService _navigationService;
         private readonly DevicePageViewModel _devicePageViewModel;
         //private readonly PatientStore _patientStore;
@@ -40,8 +41,9 @@ namespace WpfApp1.Commands
         #endregion
 
         public StartTrialCommand(DevicePageViewModel devicePageViewModel,
-                                ExperimentStore experimentStore, DeviceConnectionStore deviceConnectionStore)
+                                ExperimentStore experimentStore, DeviceConnectionStore deviceConnectionStore, NavigationService navigationService)
         {
+            _navigationService = navigationService;
             _devicePageViewModel = devicePageViewModel;
             _experimentStore = experimentStore;
             _deviceConnectionStore = deviceConnectionStore;
@@ -161,6 +163,8 @@ namespace WpfApp1.Commands
 
                 // Apre la Finestra dei Task
                 _deviceWindow.Show();
+
+                _navigationService.Navigate();
 
                 //MessageBox.Show(_experimentStore.ExperimentTaskSourceFolder(), "Sorgente Esperimento");
 

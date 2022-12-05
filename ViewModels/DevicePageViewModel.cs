@@ -58,7 +58,7 @@ namespace WpfApp1.ViewModels
 
             InitializeInkWatchers();
 
-            StartTrialCommand = new StartTrialCommand(this, experimentStore, deviceConnectionStore);
+            StartTrialCommand = new StartTrialCommand(this, experimentStore, deviceConnectionStore, patientInfoPageNavigationService);
             BackToPatientInfoCommand = new BackToPatientInfoCommand(this, patientInfoPageNavigationService);
         }
 
@@ -92,6 +92,10 @@ namespace WpfApp1.ViewModels
                 catch (Exception ex)
                 {
                     sb.AppendLine($"Unable to create InkDeviceWatcher [index={i}] {ex.Message}");
+
+
+                    //Added 16/11/2022
+                    sb.Clear();
                 }
             }
 
