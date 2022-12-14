@@ -67,8 +67,13 @@ namespace WpfApp1
             // Prelevo il path della cartella Documenti
             string savingFolder = (string)Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 
+            // Crea la stringa con la data odierna per collezionare le acquisizioni in sottocartelle
+            String Todaysdate = DateTime.Now.ToString("dd-MM-yyyy");
+
             // Aggiungo la sottocartella ApplicationSavingFolder, nella quale verranno salvati i singoli pazienti
             savingFolder = Path.Combine(savingFolder, "Application_Saving_Folder");
+
+            savingFolder = Path.Combine(savingFolder, Todaysdate);
 
             return savingFolder;
         }
