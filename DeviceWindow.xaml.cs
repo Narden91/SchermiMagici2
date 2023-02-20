@@ -593,6 +593,7 @@ namespace WpfApp1
 				stream.WriteLine("Timestamp,PointX,PointY,Phase,Pressure,PointDisplayX,PointDisplayY,PointRawX,PointRawY,PressureRaw,TimestampRaw,Sequence,Rotation,Azimuth,Altitude,TiltX,TiltY,PenId");
 
 				StringBuilder sb = new StringBuilder();
+
 				foreach (var item in _realTimeInk_PenData)
 				{
 					sb.Append($"{item.Timestamp.ToString("O")},{item.Point.X,6},{item.Point.Y,6},{item.Phase.ToString(),-11}");
