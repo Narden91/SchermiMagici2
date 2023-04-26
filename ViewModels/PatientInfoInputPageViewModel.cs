@@ -63,7 +63,6 @@ namespace WpfApp1.ViewModels
 
                 _surname = value;
                 OnPropertyChanged(nameof(Surname));
-
                 OnPropertyChanged(nameof(CanAddPatient));
             }
         }
