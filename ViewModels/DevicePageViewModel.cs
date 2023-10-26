@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ServiceProcess;
 using System.Text;
 using System.Threading;
 using System.Windows;
@@ -56,12 +57,33 @@ namespace WpfApp1.ViewModels
 
             _synchronizationContext = SynchronizationContext.Current;
 
+            
             InitializeInkWatchers();
 
             // Dopo questo punto ho la lista dei dispositivi collegati al PC (_inkDeviceWatchers)
 
             StartTrialCommand = new StartTrialCommand(this, experimentStore, deviceConnectionStore);
             BackToPatientInfoCommand = new BackToPatientInfoCommand(this, patientInfoPageNavigationService);
+        }
+
+        /// <summary>
+        /// Controlla se il servizio Wacom  è in esecuzione
+        /// </summary>
+        /// <param name="serviceName"></param>
+        /// <returns></returns>
+        public bool IsServiceRunning(string serviceName)
+        {
+            ServiceController service = new ServiceController(serviceName);
+
+            try
+            {
+                return service.Status == ServiceControllerStatus.Running;
+            }
+            catch (InvalidOperationException)
+            {
+                // Service not found
+                return false;
+            }
         }
 
 
@@ -93,7 +115,16 @@ namespace WpfApp1.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    sb.AppendLine($"Unable to create InkDeviceWatcher [index={i}] {ex.Message}");
+                    // Unable to create InkDeviceWatcher 
+                    sb.AppendLine($"Unable to create InkDeviceWatcher [index={i}] \n {ex.Message}");
+
+                    // Clean up any watchers that were successfully created
+                    foreach (var watcher in _inkDeviceWatchers)
+                    {
+                        watcher.DeviceAdded -= (s, e) => _synchronizationContext.Post(o => DeviceAdded(s, e), null);
+                        watcher.DeviceRemoved -= (s, e) => _synchronizationContext.Post(o => DeviceRemoved(s, e), null);
+                        watcher.Stop();
+                    }
                 }
             }
 

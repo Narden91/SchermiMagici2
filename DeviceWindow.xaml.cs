@@ -25,8 +25,11 @@ namespace WpfApp1
 		private readonly ExperimentStore _experimentStore;
 		private TaskCanvas _taskCanvasWindow;
 
-		#region Attributi
-		private string _pathCurrentTask;
+        private List<TaskCanvas> _taskCanvasWindows = new List<TaskCanvas>();
+
+
+        #region Attributi
+        private string _pathCurrentTask;
 		private string _instructionBoxText;
 		private string _pathTextCurrentTask;
 		private string _imageSavingFolderPath;
@@ -130,9 +133,9 @@ namespace WpfApp1
 		private Wacom.Devices.IRealTimeInkService _realTimeInkService;
 
 		private Wacom.Devices.IInkDeviceNotification<Wacom.Devices.BatteryStateChangedEventArgs> _batteryStatedChangedNotification;
-		#endregion
+        #endregion
 
-		public DeviceWindow(Wacom.Devices.IInkDeviceInfo inkDeviceInfo, ExperimentStore experimentStore)
+        public DeviceWindow(Wacom.Devices.IInkDeviceInfo inkDeviceInfo, ExperimentStore experimentStore)
 		{
 
 			_inkDeviceInfo = inkDeviceInfo;
@@ -164,7 +167,6 @@ namespace WpfApp1
             // Crea la Cartella in Documenti/Application_saving_folder/..
             Directory.CreateDirectory(_imageSavingFolderPath);
 
-
             // Salvataggio anagrafica paziente
             SavePatientInformation();
 
@@ -182,42 +184,60 @@ namespace WpfApp1
 		}
 
 
-		/// <summary>
-		/// Funzione collegata al pulsante Open nella View
-		/// Apre la finestra del task i-esimo in un nuovo thread
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
-		private void OpenTaskWindow(object sender, RoutedEventArgs e)
-		{
+        //if (TaskNameToShowToUI == "Task_6" || TaskNameToShowToUI == "Task_7" || TaskNameToShowToUI == "Task_7")
+        //	RealTimeInk_StartStop = false;
+        //else
+        //             RealTimeInk_StartStop = true;
 
-            //if (TaskNameToShowToUI == "Task_6" || TaskNameToShowToUI == "Task_7" || TaskNameToShowToUI == "Task_7")
-            //	RealTimeInk_StartStop = false;
-            //else
-            //             RealTimeInk_StartStop = true;
+
+        /// <summary>
+        /// Funzione collegata al pulsante Open nella View
+        /// Apre la finestra del task i-esimo in un nuovo thread
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OpenTaskWindow(object sender, RoutedEventArgs e)
+		{
 
             string imageTaskPath = Path.Combine(_imageSavingFolderPath, TaskNameToShowToUI + ".png");
 
             RealTimeInk_StartStop = true;
             NewTaskStartButtonEnabled = false;
+			SaveTaskButtonEnabled = true;
+			SkipTaskButtonEnabled = false;
 
             //MessageBox.Show(imageTaskPath, "Path Immagine Task ");
 
 
-            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
-			{
-				_taskCanvasWindow = new TaskCanvas(PathCurrentTask, imageTaskPath);
-				_taskCanvasWindow.Show();
-			}));
+            //Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
+            //{
+            //	_taskCanvasWindow = new TaskCanvas(PathCurrentTask, imageTaskPath);
+            //	_taskCanvasWindow.Show();
+            //}));
 
-			#region Threading usando Task
-			//Task.Factory.StartNew(new Action(() =>
-			//{
-			//	_taskCanvasWindow = new TaskCanvas(_pathCurrentTask);
-			//	_taskCanvasWindow.Show();
-			//}), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.FromCurrentSynchronizationContext());
-			#endregion
-		}
+            //Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
+            //{
+            //    _taskCanvasWindow = new TaskCanvas(PathCurrentTask, imageTaskPath);
+            //    _taskCanvasWindow.Closed += (s, e) => _openTaskCanvasWindows.Remove((TaskCanvas)s);
+            //    _openTaskCanvasWindows.Add(_taskCanvasWindow);
+            //    _taskCanvasWindow.Show();
+            //}));
+
+            Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
+            {
+                TaskCanvas newCanvas = new TaskCanvas(PathCurrentTask, imageTaskPath);
+                _taskCanvasWindows.Add(newCanvas);
+                newCanvas.Show();
+            }));
+
+            #region Threading usando Task
+            //Task.Factory.StartNew(new Action(() =>
+            //{
+            //	_taskCanvasWindow = new TaskCanvas(_pathCurrentTask);
+            //	_taskCanvasWindow.Show();
+            //}), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.FromCurrentSynchronizationContext());
+            #endregion
+        }
 
 		/// <summary>
 		/// Funzione per salvare le informazioni del paziente in un 
@@ -300,7 +320,8 @@ namespace WpfApp1
 			}, _cancellationToken.Token).ConfigureAwait(continueOnCapturedContext: false);
 		}
 
-		private void Disconnect()
+		
+        private void Disconnect()
 		{
 			_cancellationToken.Cancel();
 
@@ -437,7 +458,7 @@ namespace WpfApp1
 
 		#region Attributi privati gestione punti acquisiti
 		private List<Wacom.Devices.RealTimePointReceivedEventArgs> _realTimeInk_PenData = new List<Wacom.Devices.RealTimePointReceivedEventArgs>();
-		private Wacom.Devices.RealTimePointReceivedEventArgs _realTimeInk_PenData_Last;
+		private Wacom.Devices.RealTimePointReceivedEventArgs? _realTimeInk_PenData_Last;
 		#endregion
 
 		private void Initialize_RealTimeInk()
@@ -529,7 +550,7 @@ namespace WpfApp1
 
         #region Pulsante Salva Task
 
-        private bool _saveTaskButtonEnabled = true;
+        private bool _saveTaskButtonEnabled = false;
 
         /// <summary>
         /// Funzione Per gestire l'abilitazione del pulsante Salva
@@ -660,28 +681,61 @@ namespace WpfApp1
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show($"Unable to load image: {ex.Message}");
+				MessageBox.Show($"Errore: {ex.Message}");
 			}
 			return status;
 		}
 
-		/// <summary>
-		/// Funzione collegata al pulsante Save della View
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
-		private void RealTimeInk_PenData_Save(object sender, RoutedEventArgs e)
-		{
-			RealTimeInk_StartStop = false;
-            NewTaskStartButtonEnabled = true;
 
+		/// <summary>
+		/// Funzione per chiudere tutte le finestre dei Task aperte
+		/// </summary>
+        private void CloseAllTaskCanvasWindows()
+        {
+            //MessageBox.Show(_taskCanvasWindows.Count.ToString(), "Numero di finestre aperte che verranno chiuse:");
+
+            foreach (var window in _taskCanvasWindows)
+            {
+                if (window != null)
+                {
+                    window.Close();
+                }
+            }
+            _taskCanvasWindows.Clear();  // Clear the list after closing all the windows
+        }
+
+		/// <summary>
+		/// Check se il file del Task esiste 
+		/// </summary>
+		/// <param name="filePath"></param>
+		/// <returns></returns>
+        public bool CsvFileExists(string filePath)
+        {
+            // Check if the file has a .csv extension and if it exists
+            return Path.GetExtension(filePath).ToLower() == ".csv" && File.Exists(filePath);
+        }
+
+
+        /// <summary>
+        /// Funzione collegata al pulsante Save della View
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void RealTimeInk_PenData_Save(object sender, RoutedEventArgs e)
+		{
+			
             if (_realTimeInk_PenData.Count > 0)
 			{
 				var result = CustomMessageBox.ShowOKCancel("Il Task è stato eseguito correttamente?",
 														   "Esecuzione Terminata",
 														   "Si, Salva Task",
-														   "No, Ripeti");
-				
+														   "No, Ripeti il Task");
+
+                RealTimeInk_StartStop = false;
+                NewTaskStartButtonEnabled = true;
+				SaveTaskButtonEnabled = false;
+                SkipTaskButtonEnabled = true;
+
                 if (result == MessageBoxResult.OK)
 				{
 
@@ -692,14 +746,23 @@ namespace WpfApp1
 					// Path completo del file csv dello specifico Task
 					string taskFilePath = Path.Combine(DataPath, taskFilename);
 
-					_taskCanvasWindow.Close();
+                    // _taskCanvasWindow.Close();
+                    CloseAllTaskCanvasWindows();
 
-                    GC.Collect();
 
                     if (!SavePenData(taskFilePath))
 					{
 						MessageBox.Show("Errore durante il salvataggio");
 					}
+
+					if (CsvFileExists(taskFilePath))
+					{
+                        MessageBox.Show("File salvato correttamente");
+                    }
+					else
+					{
+                        MessageBox.Show("Ripetere il Task");
+                    }
 
 					//Task.Run(() => RealTimeInk_SavePenData(taskFilePath), _cancellationToken.Token);
 
@@ -756,8 +819,8 @@ namespace WpfApp1
 					OnPenDataPropertyChanged();
 
 					// Chiudo la finestra del Task 
-					_taskCanvasWindow.Close();
-				}
+                    CloseAllTaskCanvasWindows();
+                }
 
 
 				//PathCurrentTask = TaskImageList[_taskCounter];
@@ -783,7 +846,26 @@ namespace WpfApp1
 				//}
 				#endregion
 			}
-		}
+			else
+			{
+                MessageBox.Show("Nessun Punto Acquisito, Task da ripetere! Premi di nuovo Somministra");
+                RealTimeInk_StartStop = false;
+                NewTaskStartButtonEnabled = true;
+                SaveTaskButtonEnabled = false;
+                SkipTaskButtonEnabled = true;
+                // Reinizializza il Counter dei punti in memoria
+                _realTimeInk_PenData_Last = null;
+                _realTimeInk_PenData.Clear();
+
+                // Aggiorna la UI
+                OnPenDataPropertyChanged();
+
+                // Chiudo la finestra del Task 
+                CloseAllTaskCanvasWindows();
+            }
+
+            GC.Collect();
+        }
 
 		/// <summary>
 		/// Funzione per poter passare al Task successivo senza dover salvare 
@@ -836,12 +918,12 @@ namespace WpfApp1
 				OnPenDataPropertyChanged();
 
 				// Chiudo la finestra del Task 
-				_taskCanvasWindow.Close();
+				//_taskCanvasWindow.Close();
 			}
 		}
 
 
-		private string ValueToString<T>(T? value) where T : struct
+		private string? ValueToString<T>(T? value) where T : struct
 		{
 			return value != null && value.HasValue ? value.ToString() : "";
 		}
@@ -851,9 +933,9 @@ namespace WpfApp1
 			return value != null && value.HasValue ? $"0x{value.Value:x8}" : "";
 		}
 
-		public string RealTimeInk_Timestamp => _realTimeInk_PenData_Last?.Timestamp.ToString("O");
-		public string RealTimeInk_Point => _realTimeInk_PenData_Last?.Point.ToString();
-		public string RealTimeInk_Phase => _realTimeInk_PenData_Last?.Phase.ToString();
+		public string? RealTimeInk_Timestamp => _realTimeInk_PenData_Last?.Timestamp.ToString("O");
+		public string? RealTimeInk_Point => _realTimeInk_PenData_Last?.Point.ToString();
+		public string? RealTimeInk_Phase => _realTimeInk_PenData_Last?.Phase.ToString();
 		public string RealTimeInk_Pressure => ValueToString(_realTimeInk_PenData_Last?.Pressure);
 		public string RealTimeInk_PointDisplay => ValueToString(_realTimeInk_PenData_Last?.PointDisplay);
 		public string RealTimeInk_PointRaw => ValueToString(_realTimeInk_PenData_Last?.PointRaw);
@@ -865,15 +947,93 @@ namespace WpfApp1
 		public string RealTimeInk_Altitude => ValueToString(_realTimeInk_PenData_Last?.Altitude);
 		public string RealTimeInk_Tilt => ValueToString(_realTimeInk_PenData_Last?.Tilt);
 		public string RealTimeInk_PenId => ValueToHexString(_realTimeInk_PenData_Last?.PenId);
-		#endregion
+        #endregion
 
 
-		private void OnWindowclose(object sender, EventArgs e)
-		{
-			Environment.Exit(Environment.ExitCode); // Prevent memory leak
-			Application.Current.Shutdown();
-		}
+        //private void OnWindowclose(object sender, EventArgs e)
+        //{
+        //	// Print the number of open windows
+        //	MessageBox.Show(_taskCanvasWindows.Count.ToString(), "Numero di finestre aperte");
+        //	CloseAllTaskCanvasWindows();
+        //GC.Collect();
+        //Environment.Exit(Environment.ExitCode); // Prevent memory leak
+        //	Application.Current.Shutdown();
+        //}
 
-	}
+		/// <summary>
+		/// Delete all files in a directory
+		/// </summary>
+		/// <param name="directoryPath"></param>
+        public void DeleteFilesInDirectory(string directoryPath)
+        {
+            if (Directory.Exists(directoryPath))
+            {
+                // Delete all files in the directory
+                string[] files = Directory.GetFiles(directoryPath);
+                foreach (string file in files)
+                {
+                    try
+                    {
+                        File.Delete(file);
+                    }
+                    catch (IOException ioEx)
+                    {
+						MessageBox.Show($"An error occurred while deleting {file}. Error: {ioEx.Message}");
+                        //Console.WriteLine($"An error occurred while deleting {file}. Error: {ioEx.Message}");
+                    }
+                    catch (UnauthorizedAccessException unAuthEx)
+                    {
+						MessageBox.Show($"No permission to delete {file}. Error: {unAuthEx.Message}");
+                        //Console.WriteLine($"No permission to delete {file}. Error: {unAuthEx.Message}");
+                    }
+                }
+
+                // Delete all subdirectories and their contents
+                string[] subdirectories = Directory.GetDirectories(directoryPath);
+                foreach (string subdirectory in subdirectories)
+                {
+                    try
+                    {
+                        Directory.Delete(subdirectory, true); // true => recursive delete
+                    }
+                    catch (IOException ioEx)
+                    {
+						MessageBox.Show($"An error occurred while deleting directory {subdirectory}. Error: {ioEx.Message}");
+                        //Console.WriteLine($"An error occurred while deleting directory {subdirectory}. Error: {ioEx.Message}");
+                    }
+                    catch (UnauthorizedAccessException unAuthEx)
+                    {
+						MessageBox.Show($"No permission to delete directory {subdirectory}. Error: {unAuthEx.Message}");
+                        //Console.WriteLine($"No permission to delete directory {subdirectory}. Error: {unAuthEx.Message}");
+                    }
+                }
+            }
+            else
+            {
+				MessageBox.Show("The specified directory does not exist.");
+                //Console.WriteLine("The specified directory does not exist.");
+            }
+        }
+
+        private void Window_Closing(object sender, CancelEventArgs e)
+        {
+            MessageBoxResult result = MessageBox.Show("Attenzione! L'acquisizione per il soggetto corrente verrà interrotta!",
+				"Conferma", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                GC.Collect();
+                CloseAllTaskCanvasWindows();  // Close all child windows
+				// Delete all files in the directory
+                // DeleteFilesInDirectory(DataPath);
+            }
+            else
+            {
+                e.Cancel = true;  // Cancel the close operation
+            }
+        }
+
+
+    }
 
 }

@@ -40,6 +40,10 @@
         "netcoreapp3.1": {
           "targetAlias": "netcoreapp3.1",
           "dependencies": {
+            "System.ServiceProcess.ServiceController": {
+              "target": "Package",
+              "version": "[7.0.1, )"
+            },
             "ToggleSwitch": {
               "target": "Package",
               "version": "[1.2.0, )"

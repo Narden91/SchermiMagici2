@@ -8,11 +8,11 @@ namespace WpfApp1.ViewModels
     public class ProctorPersonalInfoPageViewModel : ViewModelBase
     {
         #region Fields
-        private string _name;
-        private string _surname;
-        private string _city;
-        private string _taskPath;
-        private string _notes;
+        private string _name = string.Empty;
+        private string _surname = string.Empty;
+        private string _city = string.Empty;
+        private string? _taskPath;
+        private string? _notes;
 
         public string Name
         {

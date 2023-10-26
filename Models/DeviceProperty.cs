@@ -13,7 +13,7 @@ namespace WpfApp1
 
         public string Name => _name;
 
-        public string Format(object o)
+        public string? Format(object o)
         {
             if (o != null)
             {

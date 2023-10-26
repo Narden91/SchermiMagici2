@@ -8,6 +8,7 @@
     xmlns:views="clr-namespace:WpfApp1.Views"
     xmlns:vms="clr-namespace:WpfApp1.ViewModels"
     Title="Applicazione Acquisizione Dati"
+    Closed="Window_Closed"
     Icon="pack://application:,,,/Resources/logoCassino.ico"
     Width="800"
     Height="450"

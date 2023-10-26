@@ -74,6 +74,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="7.0.1" />
     <PackageReference Include="ToggleSwitch" Version="1.2.0" />
     <PackageReference Include="Wacom.Devices" Version="2.1.0.14" />
     <PackageReference Include="WPFCustomMessageBox" Version="1.0.7" />

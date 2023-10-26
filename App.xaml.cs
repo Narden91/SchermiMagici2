@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Configuration;
 using System.IO;
+using System.Threading;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -21,7 +22,9 @@ namespace WpfApp1
         private ProctorStore _proctorStore;
         private ExperimentStore _experimentStore;
         private DeviceConnectionStore _deviceConnectionStore;
+        private static Mutex _mutex = null; 
         #endregion
+
 
         public App()
         {
@@ -44,6 +47,21 @@ namespace WpfApp1
         /// <param name="e"></param>
         protected override void OnStartup(StartupEventArgs e)
         {
+            base.OnStartup(e);
+
+            // Check for multiple instances using Mutex
+            const string appName = "SchermiMagici";
+            bool createdNew;
+
+            _mutex = new Mutex(true, appName, out createdNew);
+
+            if (!createdNew)
+            {
+                MessageBox.Show("The app is already running!");
+                Shutdown(); // Shutdown the current application
+                return;
+            }
+
             _navigationStore.CurrentViewModel = CreateHomeViewModel();
 
             MainWindow = new MainWindow()

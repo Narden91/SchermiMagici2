@@ -12,7 +12,10 @@ C:\Users\Emanuele\Desktop\SchermiMagici2\bin\Debug\netcoreapp3.1\jose-jwt.dll
 C:\Users\Emanuele\Desktop\SchermiMagici2\bin\Debug\netcoreapp3.1\Microsoft.Win32.SystemEvents.dll
 C:\Users\Emanuele\Desktop\SchermiMagici2\bin\Debug\netcoreapp3.1\Newtonsoft.Json.dll
 C:\Users\Emanuele\Desktop\SchermiMagici2\bin\Debug\netcoreapp3.1\BouncyCastle.Crypto.dll
+C:\Users\Emanuele\Desktop\SchermiMagici2\bin\Debug\netcoreapp3.1\System.Diagnostics.EventLog.dll
 C:\Users\Emanuele\Desktop\SchermiMagici2\bin\Debug\netcoreapp3.1\System.Drawing.Common.dll
+C:\Users\Emanuele\Desktop\SchermiMagici2\bin\Debug\netcoreapp3.1\System.Security.Principal.Windows.dll
+C:\Users\Emanuele\Desktop\SchermiMagici2\bin\Debug\netcoreapp3.1\System.ServiceProcess.ServiceController.dll
 C:\Users\Emanuele\Desktop\SchermiMagici2\bin\Debug\netcoreapp3.1\ToggleSwitch.dll
 C:\Users\Emanuele\Desktop\SchermiMagici2\bin\Debug\netcoreapp3.1\Wacom.Devices.dll
 C:\Users\Emanuele\Desktop\SchermiMagici2\bin\Debug\netcoreapp3.1\Wacom.Licensing.dll
@@ -24,6 +27,8 @@ C:\Users\Emanuele\Desktop\SchermiMagici2\bin\Debug\netcoreapp3.1\runtimes\win-x8
 C:\Users\Emanuele\Desktop\SchermiMagici2\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp3.0\Microsoft.Win32.SystemEvents.dll
 C:\Users\Emanuele\Desktop\SchermiMagici2\bin\Debug\netcoreapp3.1\runtimes\unix\lib\netcoreapp3.0\System.Drawing.Common.dll
 C:\Users\Emanuele\Desktop\SchermiMagici2\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp3.0\System.Drawing.Common.dll
+C:\Users\Emanuele\Desktop\SchermiMagici2\bin\Debug\netcoreapp3.1\runtimes\unix\lib\netcoreapp2.1\System.Security.Principal.Windows.dll
+C:\Users\Emanuele\Desktop\SchermiMagici2\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp2.1\System.Security.Principal.Windows.dll
 C:\Users\Emanuele\Desktop\SchermiMagici2\obj\Debug\netcoreapp3.1\WpfApp1.csproj.AssemblyReference.cache
 C:\Users\Emanuele\Desktop\SchermiMagici2\obj\Debug\netcoreapp3.1\WpfApp1.csproj.ResolveComReference.cache
 C:\Users\Emanuele\Desktop\SchermiMagici2\obj\Debug\netcoreapp3.1\myStyles.baml

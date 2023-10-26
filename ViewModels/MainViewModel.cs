@@ -28,5 +28,6 @@ namespace WpfApp1.ViewModels
         {
             OnPropertyChanged(nameof(CurrentViewModel));
         }
+
     }
 }

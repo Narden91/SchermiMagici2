@@ -47,6 +47,7 @@ namespace WpfApp1
         /// <summary>
         /// Apre la finestra del Task direttamente sulla Wacom One a schermo pieno
         /// </summary>
+        /// 
         public void MaximizeToSecondaryMonitor()
         {
             var secondaryScreen = Screen.AllScreens.Where(s => !s.Primary).FirstOrDefault();
@@ -59,8 +60,28 @@ namespace WpfApp1
                 this.Width = workingArea.Width;
                 this.Height = workingArea.Height;
 
+                // Update the canvas dimensions to the secondary screen resolution
+                _widthCanvas = workingArea.Width;
+                _heightCanvas = workingArea.Height;
             }
         }
+
+
+
+        //public void MaximizeToSecondaryMonitor()
+        //{
+        //    var secondaryScreen = Screen.AllScreens.Where(s => !s.Primary).FirstOrDefault();
+
+        //    if (secondaryScreen != null)
+        //    {
+        //        var workingArea = secondaryScreen.WorkingArea;
+        //        this.Left = workingArea.Left;
+        //        this.Top = workingArea.Top;
+        //        this.Width = workingArea.Width;
+        //        this.Height = workingArea.Height;
+
+        //    }
+        //}
 
         /// <summary>
         /// Routine attivata al momento dell'apertura della finestra
@@ -92,6 +113,7 @@ namespace WpfApp1
         {
             RenderTargetBitmap rtb = new RenderTargetBitmap(_widthCanvas, _heightCanvas, 96d, 96d, PixelFormats.Default);
             rtb.Render(inkCanvasTask);
+
             DrawingVisual dvInk = new DrawingVisual();
             DrawingContext dcInk = dvInk.RenderOpen();
             dcInk.DrawRectangle(inkCanvasTask.Background, null, new Rect(0d, 0d, _widthCanvas, _heightCanvas));

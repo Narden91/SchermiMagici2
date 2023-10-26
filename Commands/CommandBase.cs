@@ -5,7 +5,7 @@ namespace WpfApp1.Commands
 {
     public abstract class CommandBase : ICommand
     {
-        public event EventHandler CanExecuteChanged;
+        public event EventHandler? CanExecuteChanged;
 
         /// <summary>
         /// Metodo per capire se il Comando può o non può essere eseguito

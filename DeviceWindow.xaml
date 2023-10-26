@@ -8,7 +8,9 @@
         Icon="pack://application:,,,/Resources/logoCassino.ico"
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
         mc:Ignorable="d"
-        Title="Finestra Esperimento" Height="500" Width="800" ResizeMode="NoResize">
+        Title="Finestra Esperimento" 
+        Closing="Window_Closing"
+        Height="500" Width="800" ResizeMode="NoResize">
     <DockPanel>
         <!--StackPanel Stato Dispositivo Fondo Pagina-->
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" Margin="10,0,10,0">

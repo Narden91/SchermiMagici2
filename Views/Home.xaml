@@ -26,9 +26,9 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             FontFamily="Shrikhand"
-            FontSize="30"
+            FontSize="36"
             Foreground="#FF3A65A9"
-            Text="Schermi Magici e Segni Preziosi" FontWeight="Bold" FontStyle="Normal" TextDecorations="{x:Null}" />
+            FontWeight="Bold" FontStyle="Normal" TextDecorations="{x:Null}" Text="Schermi Magici e Segni Preziosi " />
 
         <Image
             Name="ImageViewer1"
