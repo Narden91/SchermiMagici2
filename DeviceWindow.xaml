@@ -112,11 +112,11 @@
                 <Label 
                 VerticalAlignment="Center"
                 FontSize="16"
-                Content="Acquisizione Abilitata:"/>
+                Content="File Csv Acquisiti:"/>
                 <TextBlock 
                 VerticalAlignment="Center" 
                 FontSize="16"
-                Text="{Binding RealTimeInk_IsStarted}"/>
+                Text="{Binding NumberCsvFile}"/>
             </StackPanel>
 
             <!--<Label Grid.Column="2" Grid.Row="1" VerticalAlignment="Center" Content="IsStarted" FontSize="16"/>
@@ -266,26 +266,26 @@
                 Grid.Row="5"
                 x:Name="SubTaskButton"
                 IsEnabled="{Binding NewTaskStartButtonEnabled}"
-                Width="181"
+                Width="130"
                 Height="35"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top" 
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center" 
                 Click="OpenTaskWindow" 
-                Content="Somministra Task"
+                Content="Somministra"
                 FontSize="16"
                 FontStretch="Expanded"
                 FontStyle="Normal"
                 FontWeight="DemiBold"
-                Style="{DynamicResource StartRoundButtonStyle}" Grid.ColumnSpan="2" Margin="101,24,0,0"/>
+                Style="{DynamicResource StartRoundButtonStyle}" Grid.ColumnSpan="1" Margin="0,0,0,0"/>
 
             <!--Pulsante Salva-->
             <Button 
                 Grid.Column="1" 
                 Grid.Row="5" 
-                Width="150"
+                Width="120"
                 Height="35"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top" 
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center" 
                 Click="RealTimeInk_PenData_Save" 
                 IsEnabled="{Binding SaveTaskButtonEnabled}"
                 Content="Salva"
@@ -293,15 +293,15 @@
                 FontStretch="Expanded"
                 FontStyle="Normal"
                 FontWeight="DemiBold"
-                Style="{DynamicResource SaveRoundButtonStyle}" Grid.ColumnSpan="2" Margin="145,27,0,0"/>
+                Style="{DynamicResource SaveRoundButtonStyle}" Grid.ColumnSpan="1" Margin="0,0,0,0"/>
 
             <!--Pulsante Avanti-->
             <Button 
-                Grid.Column="2" 
+                Grid.Column="4" 
                 Grid.Row="5" 
-                Width="150"
+                Width="120"
                 Height="35"
-                HorizontalAlignment="Left"
+                HorizontalAlignment="Center"
                 VerticalAlignment="Center" 
                 Click="SkipToNextTask" 
                 IsEnabled="{Binding SkipTaskButtonEnabled}"
@@ -310,7 +310,24 @@
                 FontStretch="Expanded"
                 FontStyle="Normal"
                 FontWeight="DemiBold"
-                Style="{DynamicResource NextRoundButtonStyle}" Grid.ColumnSpan="2" Margin="168,0,0,0"/>
+                Style="{DynamicResource NextRoundButtonStyle}" Grid.ColumnSpan="1" Margin="0,0,0,0"/>
+            
+            <!--Pulsante Indietro-->
+            <Button 
+                Grid.Column="2" 
+                Grid.Row="5" 
+                Width="120"
+                Height="35"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center" 
+                Click="GoPreviousTask" 
+                IsEnabled="{Binding SkipTaskButtonEnabled}"
+                Content="Indietro"
+                FontSize="16"
+                FontStretch="Expanded"
+                FontStyle="Normal"
+                FontWeight="DemiBold"
+                Style="{DynamicResource NextRoundButtonStyle}" Grid.ColumnSpan="1" Margin="0,0,0,0"/>
         </Grid>
     </DockPanel>
 </Window>
