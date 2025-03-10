@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Windows;
 using WpfApp1.Models;
@@ -9,34 +10,11 @@ namespace WpfApp1.Commands
 {
     public class StartTrialCommand : CommandBase
     {
-
-        //private readonly NavigationService _navigationService;
         private readonly DevicePageViewModel _devicePageViewModel;
-        //private readonly PatientStore _patientStore;
         private readonly ExperimentStore _experimentStore;
         private readonly DeviceConnectionStore _deviceConnectionStore;
 
         private DeviceWindow _deviceWindow;
-
-        #region Costruttore inutilizzato
-        //public StartTrialCommand(DevicePageViewModel devicePageViewModel, NavigationService navigationService, 
-        //                         ProctorStore proctorStore, PatientStore patientStore, ExperimentStore experimentStore)
-        //{
-        //    _devicePageViewModel = devicePageViewModel;
-        //    _navigationService = navigationService;
-        //    _proctorStore = proctorStore;
-        //    _patientStore = patientStore;   
-        //}
-
-        //public StartTrialCommand(DevicePageViewModel devicePageViewModel, NavigationService navigationService, 
-        //                         ExperimentStore experimentStore, DeviceConnectionStore deviceConnectionStore)
-        //{
-        //    _devicePageViewModel = devicePageViewModel;
-        //    _navigationService = navigationService;
-        //    _experimentStore = experimentStore;
-        //    _deviceConnectionStore = deviceConnectionStore;
-        //}
-        #endregion
 
         public StartTrialCommand(DevicePageViewModel devicePageViewModel,
                                 ExperimentStore experimentStore, DeviceConnectionStore deviceConnectionStore)
@@ -46,7 +24,6 @@ namespace WpfApp1.Commands
             _deviceConnectionStore = deviceConnectionStore;
         }
 
-
         /// <summary>
         /// Funzione che esegue operazioni alla pressione del pulsante 
         /// StartTrialCommand nella View della connessione dispositivi
@@ -54,62 +31,15 @@ namespace WpfApp1.Commands
         /// <param name="parameter"></param>
         public override void Execute(object parameter)
         {
-            // TODO: 
-            // - Fare un check sulla _inkDeviceWatchers, se vuota -> MessageBox altrimenti seleziona il device 0 (primo della lista)
-
-
             if (_devicePageViewModel.SelectedDevice == null)
             {
-                MessageBox.Show("No device selected");
-
-                #region Debug 1
-                //string savingFolder = App.GetAppFolder();
-
-                //savingFolder = Path.Combine(savingFolder, _devicePageViewModel.PatientExperimentOutputFolder);
-
-                //MessageBox.Show(savingFolder, "Directory:");
-
-                ////System.IO.Directory.CreateDirectory(savingFolder);
-
-                //bool IsFolderCreated = File.Exists(savingFolder);
-
-                //if (IsFolderCreated)
-                //{
-                //    MessageBox.Show("Directory esistente");
-
-                //    //System.IO.Directory.CreateDirectory(savingFolder);
-                //    // Debug 
-                //    //MessageBox.Show(savingFolder, "Directory creata");
-                //}
-                //else
-                //{
-                //    MessageBox.Show("Directory non presente");
-                //    Directory.CreateDirectory(savingFolder);
-                //    MessageBox.Show("Directory creata!");
-                //    // Debug 
-                //    //MessageBox.Show(savingFolder, "Directory già esistente");
-                //}
-                //// Debug 
-                ////MessageBox.Show(savingFolder, "Directory");
-                #endregion
-
+                MessageBox.Show("Nessun dispositivo selezionato. Per favore, seleziona un dispositivo prima di continuare.",
+                              "Dispositivo Mancante", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
             }
-            else
+
+            try
             {
-                #region Debug 2
-                //MessageBox.Show(_devicePageViewModel.SelectedDevice.ToString(), "Device selezionato: ");
-
-                //string savingFolder = App.GetAppFolder();
-
-                //savingFolder = Path.Combine(savingFolder, _devicePageViewModel.PatientExperimentOutputFolder);
-
-                ////if(!File.Exists(savingFolder))
-                ////    System.IO.Directory.CreateDirectory(savingFolder);
-
-                // Debug 
-                //MessageBox.Show(_patientStore.PrintPatient(), "Patient");
-                #endregion
-
                 // Crea DeviceStore 
                 _deviceConnectionStore.CreateDeviceConnection(_devicePageViewModel.SelectedDevice);
 
@@ -129,52 +59,132 @@ namespace WpfApp1.Commands
                 _experimentStore.CreateExperiment(experiment);
 
                 // Creo la stringa che rappresenterà il path in cui salvare i Task del paziente
-                string savingFolder = App.GetAppFolder();
-                savingFolder = Path.Combine(savingFolder, _devicePageViewModel.PatientExperimentOutputFolder);
+                string savingFolder = null;
+                try
+                {
+                    savingFolder = App.GetAppFolder();
+                    if (string.IsNullOrEmpty(savingFolder))
+                    {
+                        throw new DirectoryNotFoundException("Il percorso di salvataggio dell'applicazione non è valido.");
+                    }
+
+                    savingFolder = Path.Combine(savingFolder, _devicePageViewModel.PatientExperimentOutputFolder);
+                    if (savingFolder.Length >= 248) // Windows path length limitation
+                    {
+                        throw new PathTooLongException("Il percorso di salvataggio è troppo lungo. Scegli un nome più breve per il paziente.");
+                    }
+                }
+                catch (Exception ex) when (ex is ArgumentException || ex is PathTooLongException)
+                {
+                    MessageBox.Show($"Errore nella creazione del percorso: {ex.Message}",
+                                  "Errore Percorso", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
 
                 // Assegno il path della cartella dove salvare i file .csv all'oggetto Esperimento
                 _experimentStore.SetExperimentFolder(savingFolder);
 
-                // Assegno il path sorgente dei Task
-                _experimentStore.SetExperimentTaskSourceFolder(_devicePageViewModel.TaskSourceFolder);
+                try
+                {
+                    // Verifica se la cartella sorgente dei Task esiste
+                    if (!Directory.Exists(_devicePageViewModel.TaskSourceFolder))
+                    {
+                        throw new DirectoryNotFoundException("La cartella sorgente dei Task non esiste.");
+                    }
 
-                // Creo la lista delle immagini presenti nella cartella Task selezionata
-                _experimentStore.SetExperimentTaskListOrdered();
+                    // Assegno il path sorgente dei Task
+                    _experimentStore.SetExperimentTaskSourceFolder(_devicePageViewModel.TaskSourceFolder);
+                }
+                catch (DirectoryNotFoundException ex)
+                {
+                    MessageBox.Show($"Errore nella cartella sorgente dei Task: {ex.Message}",
+                                  "Errore Configurazione", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Errore imprevisto durante la configurazione del Task: {ex.Message}",
+                                  "Errore", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
 
-                // Creo la lista delle istruzioni per i Task presenti nella cartella  selezionata
-                _experimentStore.SetExperimentTaskInstructionListOrdered();
+                try
+                {
+                    // Creo la lista delle immagini presenti nella cartella Task selezionata
+                    _experimentStore.SetExperimentTaskListOrdered();
 
-                // Debug lista immagini Task
-                //List<string> listA = new List<string>();
+                    // Creo la lista delle istruzioni per i Task presenti nella cartella selezionata
+                    _experimentStore.SetExperimentTaskInstructionListOrdered();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Errore durante la preparazione dei Task: {ex.Message}",
+                                  "Errore Task", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
 
-                //listA = _experimentStore.GetListTaskImage();
+                try
+                {
+                    // Verifica se la directory esiste già
+                    if (Directory.Exists(savingFolder))
+                    {
+                        // Opzionale: chiedere all'utente se sovrascrivere
+                        MessageBoxResult result = MessageBox.Show(
+                            "La cartella di output già esiste. Vuoi utilizzarla comunque?",
+                            "Cartella esistente",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Question);
 
-                //foreach (string file in listA)
-                //    MessageBox.Show(file, "File");
+                        if (result == MessageBoxResult.No)
+                        {
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        // Crea la Cartella in Documenti/Application_saving_folder/..
+                        Directory.CreateDirectory(savingFolder);
+                    }
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    MessageBox.Show("Non hai i permessi necessari per creare la cartella di destinazione. " +
+                                  "Prova ad eseguire l'applicazione come amministratore o scegli un'altra posizione.",
+                                  "Errore di Permessi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                catch (IOException ex)
+                {
+                    MessageBox.Show($"Errore di I/O durante la creazione della cartella: {ex.Message}",
+                                  "Errore I/O", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Errore imprevisto durante la creazione della cartella: {ex.Message}",
+                                  "Errore", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
 
-                // Crea la Cartella in Documenti/Application_saving_folder/..
-                Directory.CreateDirectory(savingFolder);
+                try
+                {
+                    // Apre la finestra nella quale verranno gestiti i Task
+                    _deviceWindow = new DeviceWindow(_deviceConnectionStore.Connection.InkDeviceInfo, _experimentStore);
 
-                // Apre la finestra nella quale verranno gestiti i Task
-                _deviceWindow = new DeviceWindow(_deviceConnectionStore.Connection.InkDeviceInfo, _experimentStore);
-
-                // Apre la Finestra dei Task
-                _deviceWindow.Show();
-
-                //MessageBox.Show(_experimentStore.ExperimentTaskSourceFolder(), "Sorgente Esperimento");
-
-
-                // Apro la finestra dei task in un nuovo thread
-                //Task.Factory.StartNew(new Action(() =>
-                //{
-                //    _deviceWindow = new DeviceWindow(_deviceConnectionStore.Connection.InkDeviceInfo, _experimentStore);
-                //    _deviceWindow.Show();
-                //}), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.FromCurrentSynchronizationContext());
-
-                // Naviga alla pagina successiva
-                //_navigationService.Navigate();
+                    // Apre la Finestra dei Task
+                    _deviceWindow.Show();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Errore durante l'apertura della finestra Task: {ex.Message}",
+                                  "Errore UI", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
-
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Si è verificato un errore imprevisto: {ex.Message}",
+                              "Errore Critico", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }
