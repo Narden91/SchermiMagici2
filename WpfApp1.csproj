@@ -62,9 +62,6 @@
     <Resource Include="Resources\ser.png">
       <CopyToOutputDirectory></CopyToOutputDirectory>
     </Resource>
-    <Resource Include="Resources\Task1.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
     <Resource Include="Resources\usb.png">
       <CopyToOutputDirectory></CopyToOutputDirectory>
     </Resource>
@@ -74,9 +71,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.ServiceProcess.ServiceController" Version="7.0.1" />
+    <PackageReference Include="Google.Protobuf" Version="3.29.2" />
+    <PackageReference Include="System.Drawing.Common" Version="9.0.0" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.0" />
     <PackageReference Include="ToggleSwitch" Version="1.2.0" />
     <PackageReference Include="Wacom.Devices" Version="2.1.0.14" />
+    <PackageReference Include="Wacom.Licensing" Version="2.1.0.14" />
     <PackageReference Include="WPFCustomMessageBox" Version="1.0.7" />
   </ItemGroup>
 
