@@ -210,7 +210,7 @@ namespace WpfApp1
 
             RealTimeInk_StartStop = true;
             NewTaskStartButtonEnabled = false;
-            SaveTaskButtonEnabled = true;
+            SaveTaskButtonEnabled = true;  
             SkipTaskButtonEnabled = false;
 
             // Start the backup process with the current task name
@@ -1360,16 +1360,18 @@ namespace WpfApp1
             }
             else
             {
-                MessageBox.Show("Nessun Punto Acquisito, Task da ripetere! Premi di nuovo Somministra",
-                                "Avviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                var result = CustomMessageBox.ShowOKCancel(
+                    "Non è stato acquisito alcun punto per questo task. Cosa vuoi fare?",
+                    "Nessun dato acquisito",
+                    "Ripeti il Task",
+                    "Passa al Task successivo");
 
                 RealTimeInk_StartStop = false;
                 // Stop backup service
                 _backupService.StopBackup();
 
-                NewTaskStartButtonEnabled = true;
+                // Explicitly disable the Save button
                 SaveTaskButtonEnabled = false;
-                SkipTaskButtonEnabled = true;
 
                 // Clear data
                 lock (_penDataLock)
@@ -1378,11 +1380,29 @@ namespace WpfApp1
                     _realTimeInk_PenData.Clear();
                 }
 
-                // Update UI
-                OnPenDataPropertyChanged();
-
                 // Close task windows
                 CloseAllTaskCanvasWindows();
+
+                if (result == MessageBoxResult.OK)
+                {
+                    // User chose to repeat the task
+                    NewTaskStartButtonEnabled = true;
+                    SaveTaskButtonEnabled = false;  // Ensure it's disabled
+                    SkipTaskButtonEnabled = true;
+
+                    // Update UI
+                    OnPenDataPropertyChanged();
+                }
+                else
+                {
+                    // User chose to move to the next task
+                    // Make sure the Save button is disabled before proceeding
+                    SaveTaskButtonEnabled = false;
+                    OnPenDataPropertyChanged();
+
+                    // Using the existing SkipToNextTask functionality
+                    SkipToNextTask(null, null);
+                }
             }
 
             // Suggest garbage collection to clean up resources
@@ -1455,6 +1475,7 @@ namespace WpfApp1
         {
             NewTaskStartButtonEnabled = true;
             RealTimeInk_StartStop = false;
+            SaveTaskButtonEnabled = false;
 
             // Stop backup service
             _backupService.StopBackup();
