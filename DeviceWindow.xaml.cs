@@ -10,10 +10,17 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using WpfApp1.Stores;
+using WpfApp1.Services;
 using WPFCustomMessageBox;
+
+
+
+
+
 
 namespace WpfApp1
 {
+
     /// <summary>
     /// Interaction logic for DeviceWindow.xaml
     /// </summary>
@@ -24,6 +31,7 @@ namespace WpfApp1
         private readonly object _penDataLock = new object();
         private readonly CancellationTokenSource _cancellationToken = new CancellationTokenSource();
         private readonly ExperimentStore _experimentStore;
+        private readonly Services.BackupService _backupService;
         private TaskCanvas _taskCanvasWindow;
 
         private List<TaskCanvas> _taskCanvasWindows = new List<TaskCanvas>();
@@ -142,7 +150,6 @@ namespace WpfApp1
 
         public DeviceWindow(Wacom.Devices.IInkDeviceInfo inkDeviceInfo, ExperimentStore experimentStore)
         {
-
             _inkDeviceInfo = inkDeviceInfo;
             _experimentStore = experimentStore;
 
@@ -157,12 +164,8 @@ namespace WpfApp1
                 _isInstructionFolderEmpty = false;
 
                 PathTextCurrentTask = TaskTextList[_taskCounter];
-
-                //MessageBox.Show(File.ReadAllText(PathTextCurrentTask), "Testo txt ");
-
                 InstructionBoxText = "";
                 InstructionBoxText = File.ReadAllText(PathTextCurrentTask);
-
             }
             else
                 InstructionBoxText = "Nessun file di Istruzioni trovato.";
@@ -171,6 +174,9 @@ namespace WpfApp1
 
             // Crea la Cartella in Documenti/Application_saving_folder/..
             Directory.CreateDirectory(_imageSavingFolderPath);
+
+            // Initialize the backup service with experiment folder path
+            _backupService = new Services.BackupService(DataPath);
 
             // Salvataggio anagrafica paziente
             SavePatientInformation();
@@ -194,16 +200,12 @@ namespace WpfApp1
         //else
         //             RealTimeInk_StartStop = true;
 
-
         /// <summary>
-        /// Funzione collegata al pulsante Open nella View
-        /// Apre la finestra del task i-esimo in un nuovo thread
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void OpenTaskWindow(object sender, RoutedEventArgs e)
         {
-
             string imageTaskPath = Path.Combine(_imageSavingFolderPath, TaskNameToShowToUI + ".png");
 
             RealTimeInk_StartStop = true;
@@ -211,22 +213,13 @@ namespace WpfApp1
             SaveTaskButtonEnabled = true;
             SkipTaskButtonEnabled = false;
 
-            //MessageBox.Show(imageTaskPath, "Path Immagine Task ");
-
-
-            //Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
-            //{
-            //	_taskCanvasWindow = new TaskCanvas(PathCurrentTask, imageTaskPath);
-            //	_taskCanvasWindow.Show();
-            //}));
-
-            //Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
-            //{
-            //    _taskCanvasWindow = new TaskCanvas(PathCurrentTask, imageTaskPath);
-            //    _taskCanvasWindow.Closed += (s, e) => _openTaskCanvasWindows.Remove((TaskCanvas)s);
-            //    _openTaskCanvasWindows.Add(_taskCanvasWindow);
-            //    _taskCanvasWindow.Show();
-            //}));
+            // Start the backup process with the current task name
+            _backupService.StartBackup(TaskNameToShowToUI, () => {
+                lock (_penDataLock)
+                {
+                    return new List<Wacom.Devices.RealTimePointReceivedEventArgs>(_realTimeInk_PenData);
+                }
+            });
 
             Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
             {
@@ -234,15 +227,57 @@ namespace WpfApp1
                 _taskCanvasWindows.Add(newCanvas);
                 newCanvas.Show();
             }));
-
-            #region Threading usando Task
-            //Task.Factory.StartNew(new Action(() =>
-            //{
-            //	_taskCanvasWindow = new TaskCanvas(_pathCurrentTask);
-            //	_taskCanvasWindow.Show();
-            //}), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.FromCurrentSynchronizationContext());
-            #endregion
         }
+
+
+        ///// <summary>
+        ///// Funzione collegata al pulsante Open nella View
+        ///// Apre la finestra del task i-esimo in un nuovo thread
+        ///// </summary>
+        ///// <param name="sender"></param>
+        ///// <param name="e"></param>
+        //private void OpenTaskWindow(object sender, RoutedEventArgs e)
+        //{
+
+        //    string imageTaskPath = Path.Combine(_imageSavingFolderPath, TaskNameToShowToUI + ".png");
+
+        //    RealTimeInk_StartStop = true;
+        //    NewTaskStartButtonEnabled = false;
+        //    SaveTaskButtonEnabled = true;
+        //    SkipTaskButtonEnabled = false;
+
+        //    //MessageBox.Show(imageTaskPath, "Path Immagine Task ");
+
+
+        //    //Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
+        //    //{
+        //    //	_taskCanvasWindow = new TaskCanvas(PathCurrentTask, imageTaskPath);
+        //    //	_taskCanvasWindow.Show();
+        //    //}));
+
+        //    //Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
+        //    //{
+        //    //    _taskCanvasWindow = new TaskCanvas(PathCurrentTask, imageTaskPath);
+        //    //    _taskCanvasWindow.Closed += (s, e) => _openTaskCanvasWindows.Remove((TaskCanvas)s);
+        //    //    _openTaskCanvasWindows.Add(_taskCanvasWindow);
+        //    //    _taskCanvasWindow.Show();
+        //    //}));
+
+        //    Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
+        //    {
+        //        TaskCanvas newCanvas = new TaskCanvas(PathCurrentTask, imageTaskPath);
+        //        _taskCanvasWindows.Add(newCanvas);
+        //        newCanvas.Show();
+        //    }));
+
+        //    #region Threading usando Task
+        //    //Task.Factory.StartNew(new Action(() =>
+        //    //{
+        //    //	_taskCanvasWindow = new TaskCanvas(_pathCurrentTask);
+        //    //	_taskCanvasWindow.Show();
+        //    //}), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.FromCurrentSynchronizationContext());
+        //    #endregion
+        //}
 
         /// <summary>
         /// Funzione per salvare le informazioni del paziente in un 
@@ -1151,6 +1186,10 @@ namespace WpfApp1
 
                 // Stop ink capture immediately
                 RealTimeInk_StartStop = false;
+
+                // Stop backup service
+                _backupService.StopBackup();
+
                 NewTaskStartButtonEnabled = true;
                 SaveTaskButtonEnabled = false;
                 SkipTaskButtonEnabled = true;
@@ -1178,6 +1217,9 @@ namespace WpfApp1
                         {
                             if (success)
                             {
+                                // Clean up backup files since save was successful
+                                _backupService.CleanupBackup();
+
                                 MessageBox.Show(message, "Salvataggio completato", MessageBoxButton.OK, MessageBoxImage.Information);
 
                                 // Clear pen data after successful save
@@ -1225,7 +1267,72 @@ namespace WpfApp1
                             }
                             else
                             {
-                                // Show error message if save failed
+                                // Check if backup is available
+                                string backupPath = _backupService.GetBackupFile();
+                                if (backupPath != null)
+                                {
+                                    var recoverResult = MessageBox.Show(
+                                        $"Il salvataggio è fallito con errore: {message}\n\nÈ disponibile un backup. Vuoi recuperarlo?",
+                                        "Errore salvataggio",
+                                        MessageBoxButton.YesNo,
+                                        MessageBoxImage.Warning);
+
+                                    if (recoverResult == MessageBoxResult.Yes)
+                                    {
+                                        try
+                                        {
+                                            // Copy backup to actual task file
+                                            File.Copy(backupPath, taskFilePath, true);
+                                            MessageBox.Show("Backup ripristinato con successo.", "Ripristino completato", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                                            // Clean up backup files since recovery was successful
+                                            _backupService.CleanupBackup();
+
+                                            // Continue with task progression
+                                            lock (_penDataLock)
+                                            {
+                                                _realTimeInk_PenData_Last = null;
+                                                _realTimeInk_PenData.Clear();
+                                            }
+
+                                            _taskCounter += 1;
+                                            _numberCsvFile = Directory.GetFiles(DataPath, "*.csv").Length;
+
+                                            if (_taskCounter >= _totalNumberOfTask)
+                                            {
+                                                MessageBox.Show("Ultimo Task eseguito, Finestra in chiusura...");
+                                                this.Close();
+                                            }
+                                            else
+                                            {
+                                                PathCurrentTask = TaskImageList[_taskCounter];
+                                                if (!_isInstructionFolderEmpty && _taskCounter < TaskTextList.Count)
+                                                {
+                                                    PathTextCurrentTask = TaskTextList[_taskCounter];
+                                                    try
+                                                    {
+                                                        InstructionBoxText = File.ReadAllText(PathTextCurrentTask);
+                                                    }
+                                                    catch (Exception ex)
+                                                    {
+                                                        InstructionBoxText = $"Errore lettura istruzioni: {ex.Message}";
+                                                    }
+                                                }
+                                                OnPenDataPropertyChanged();
+                                            }
+                                            return;
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            MessageBox.Show($"Errore durante il ripristino del backup: {ex.Message}",
+                                                "Errore ripristino",
+                                                MessageBoxButton.OK,
+                                                MessageBoxImage.Error);
+                                        }
+                                    }
+                                }
+
+                                // Show error message if save failed and backup recovery wasn't successful
                                 MessageBox.Show(message, "Errore salvataggio", MessageBoxButton.OK, MessageBoxImage.Error);
                             }
 
@@ -1257,6 +1364,9 @@ namespace WpfApp1
                                 "Avviso", MessageBoxButton.OK, MessageBoxImage.Warning);
 
                 RealTimeInk_StartStop = false;
+                // Stop backup service
+                _backupService.StopBackup();
+
                 NewTaskStartButtonEnabled = true;
                 SaveTaskButtonEnabled = false;
                 SkipTaskButtonEnabled = true;
@@ -1346,6 +1456,9 @@ namespace WpfApp1
             NewTaskStartButtonEnabled = true;
             RealTimeInk_StartStop = false;
 
+            // Stop backup service
+            _backupService.StopBackup();
+
             var result = CustomMessageBox.ShowOKCancel("Passare al Task Successivo?",
                                                        "Esecuzione Terminata",
                                                        "Si",
@@ -1359,6 +1472,9 @@ namespace WpfApp1
                     _realTimeInk_PenData_Last = null;
                     _realTimeInk_PenData.Clear();
                 }
+
+                // Clean up any backups for the current task since we're skipping it
+                _backupService.CleanupBackup();
 
                 // Increment task counter
                 _taskCounter += 1;
@@ -1465,6 +1581,9 @@ namespace WpfApp1
             NewTaskStartButtonEnabled = true;
             RealTimeInk_StartStop = false;
 
+            // Stop backup service
+            _backupService.StopBackup();
+
             var result = CustomMessageBox.ShowOKCancel("Tornare al Task precedente?",
                                                        "Esecuzione Terminata",
                                                        "Si",
@@ -1479,6 +1598,9 @@ namespace WpfApp1
                 else
                 {
                     MessageBox.Show("Il task precedentemente acquisito verrà sovrascritto!");
+
+                    // Clean up any backups for the current task
+                    _backupService.CleanupBackup();
 
                     // Thread-safe clearing of pen data
                     lock (_penDataLock)
@@ -1543,7 +1665,7 @@ namespace WpfApp1
         public string RealTimeInk_Tilt => ValueToString(_realTimeInk_PenData_Last?.Tilt);
         public string RealTimeInk_PenId => ValueToHexString(_realTimeInk_PenData_Last?.PenId);
         #endregion
-       
+
         /// <summary>
         /// Chiude tutte le finestre figlie aperte e cancella i file nella directory
         /// </summary>
@@ -1556,6 +1678,9 @@ namespace WpfApp1
 
             if (result == MessageBoxResult.Yes)
             {
+                // Stop backup service
+                _backupService.StopBackup();
+
                 GC.Collect();
                 CloseAllTaskCanvasWindows();  // Close all child windows
             }
@@ -1567,5 +1692,8 @@ namespace WpfApp1
 
 
     }
+
+
+
 
 }
